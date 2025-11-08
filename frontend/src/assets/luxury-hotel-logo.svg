@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- 背景 -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="100%" stop-color="#3151B7" />
+    </linearGradient>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700" />
+      <stop offset="100%" stop-color="#FFCB6B" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 圆形背景 -->
+  <circle cx="256" cy="256" r="240" fill="url(#bgGradient)" />
+  <circle cx="256" cy="256" r="238" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="4" />
+  
+  <!-- 酒店建筑标志 -->
+  <g>
+    <!-- 主体建筑 - 优雅塔楼 -->
+    <path d="M256,80 L350,140 L350,380 L162,380 L162,140 Z" fill="white" />
+    
+    <!-- 装饰线条 -->
+    <line x1="200" y1="140" x2="200" y2="380" stroke="#E8E8E8" stroke-width="2" />
+    <line x1="256" y1="140" x2="256" y2="380" stroke="#E8E8E8" stroke-width="2" />
+    <line x1="310" y1="140" x2="310" y2="380" stroke="#E8E8E8" stroke-width="2" />
+    
+    <!-- 顶部装饰 -->
+    <path d="M256,80 L230,110 L282,110 Z" fill="url(#goldGradient)" />
+    
+    <!-- 底部台阶 -->
+    <rect x="150" y="380" width="212" height="12" fill="#E8E8E8" />
+    <rect x="140" y="392" width="232" height="10" fill="#D0D0D0" />
+    
+    <!-- 门 -->
+    <rect x="236" y="320" width="40" height="60" fill="#1E3A8A" />
+    
+    <!-- 窗户 -->
+    <g>
+      <!-- 1楼窗户 -->
+      <rect x="182" y="310" width="30" height="40" rx="2" fill="rgba(30, 58, 138, 0.7)" />
+      <rect x="300" y="310" width="30" height="40" rx="2" fill="rgba(30, 58, 138, 0.7)" />
+      
+      <!-- 2楼窗户 -->
+      <rect x="182" y="250" width="30" height="40" rx="2" fill="rgba(30, 58, 138, 0.7)" />
+      <rect x="241" y="250" width="30" height="40" rx="2" fill="rgba(30, 58, 138, 0.7)" />
+      <rect x="300" y="250" width="30" height="40" rx="2" fill="rgba(30, 58, 138, 0.7)" />
+      
+      <!-- 3楼窗户 -->
+      <rect x="182" y="190" width="30" height="40" rx="2" fill="rgba(30, 58, 138, 0.7)" />
+      <rect x="241" y="190" width="30" height="40" rx="2" fill="rgba(30, 58, 138, 0.7)" />
+      <rect x="300" y="190" width="30" height="40" rx="2" fill="rgba(30, 58, 138, 0.7)" />
+    </g>
+    
+    <!-- 装饰五星 -->
+    <g transform="translate(256, 140) scale(0.5)">
+      <path d="M0,-20 L4.4,-6.2 L18.8,-6.2 L7.2,2.4 L11.6,16.2 L0,7.6 L-11.6,16.2 L-7.2,2.4 L-18.8,-6.2 L-4.4,-6.2 Z" fill="url(#goldGradient)" />
+    </g>
+    
+    <!-- 底部装饰 - 五星级标志 -->
+    <g transform="translate(256, 420)">
+      <path d="M-60,0 L60,0" stroke="white" stroke-width="3" />
+      <g transform="translate(-48, 0) scale(0.6)">
+        <path d="M0,-10 L2.2,-3.1 L9.4,-3.1 L3.6,1.2 L5.8,8.1 L0,3.8 L-5.8,8.1 L-3.6,1.2 L-9.4,-3.1 L-2.2,-3.1 Z" fill="url(#goldGradient)" />
+      </g>
+      <g transform="translate(-24, 0) scale(0.6)">
+        <path d="M0,-10 L2.2,-3.1 L9.4,-3.1 L3.6,1.2 L5.8,8.1 L0,3.8 L-5.8,8.1 L-3.6,1.2 L-9.4,-3.1 L-2.2,-3.1 Z" fill="url(#goldGradient)" />
+      </g>
+      <g transform="translate(0, 0) scale(0.6)">
+        <path d="M0,-10 L2.2,-3.1 L9.4,-3.1 L3.6,1.2 L5.8,8.1 L0,3.8 L-5.8,8.1 L-3.6,1.2 L-9.4,-3.1 L-2.2,-3.1 Z" fill="url(#goldGradient)" />
+      </g>
+      <g transform="translate(24, 0) scale(0.6)">
+        <path d="M0,-10 L2.2,-3.1 L9.4,-3.1 L3.6,1.2 L5.8,8.1 L0,3.8 L-5.8,8.1 L-3.6,1.2 L-9.4,-3.1 L-2.2,-3.1 Z" fill="url(#goldGradient)" />
+      </g>
+      <g transform="translate(48, 0) scale(0.6)">
+        <path d="M0,-10 L2.2,-3.1 L9.4,-3.1 L3.6,1.2 L5.8,8.1 L0,3.8 L-5.8,8.1 L-3.6,1.2 L-9.4,-3.1 L-2.2,-3.1 Z" fill="url(#goldGradient)" />
+      </g>
+    </g>
+  </g>
+</svg> 
