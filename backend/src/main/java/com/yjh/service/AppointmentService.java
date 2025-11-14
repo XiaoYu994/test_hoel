@@ -117,8 +117,10 @@ public class AppointmentService {
 //        }
         //插入预约表
         Room r = roomService.findById(appointment.getRoomId());
-        // 金额字段保持为“每晚房价”，押金仅用于展示/备注
+        // 金额字段保持为"每晚房价"，押金仅用于展示/备注
         appointment.setMoney(r.getCategory().getPrice());
+        java.math.BigDecimal deposit = r.getCategory().getDeposit() == null ? java.math.BigDecimal.ZERO : r.getCategory().getDeposit();
+        appointment.setDeposit(deposit);
         appointment.setStatus(1);//1-待确认 2-预约成功 3-已取消
         appointmentMapper.insert(appointment);
         return new Result(true, StatusCode.OK, "操作成功,等待酒店确认！");
@@ -225,7 +227,10 @@ public class AppointmentService {
         order.setRoomId(appointment.getRoomId());
         order.setDays(appointment.getDays());
         order.setStartTime(appointment.getStartTime());
-        order.setMoney(appointment.getMoney());
+        java.math.BigDecimal totalPrice = appointment.getMoney().multiply(new java.math.BigDecimal(appointment.getDays()));
+        java.math.BigDecimal deposit = appointment.getDeposit() == null ? java.math.BigDecimal.ZERO : appointment.getDeposit();
+        order.setMoney(totalPrice.add(deposit));
+        order.setDeposit(deposit);
         order.setStatus(1);
         ordersMapper.insert(order);
         return new Result(true, StatusCode.OK,"操作成功！");

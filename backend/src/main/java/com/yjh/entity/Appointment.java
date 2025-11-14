@@ -28,6 +28,8 @@ public class Appointment {
     private String remark;// 备注
 	@TableField("money")
     private BigDecimal money;// 已付金额
+	@TableField("deposit")
+    private BigDecimal deposit;// 押金
 
 
     @TableField(exist = false)
@@ -116,5 +118,13 @@ public class Appointment {
 
     public void setRoom(Room room) {
         this.room = room;
+    }
+
+    public BigDecimal getDeposit() {
+        return deposit;
+    }
+
+    public void setDeposit(BigDecimal deposit) {
+        this.deposit = deposit;
     }
 }

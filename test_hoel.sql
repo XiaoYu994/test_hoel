@@ -50,6 +50,7 @@ CREATE TABLE `appointment`  (
   `status` int(0) NULL DEFAULT NULL COMMENT '状态',
   `remark` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '备注',
   `money` decimal(10, 2) NULL DEFAULT NULL COMMENT '已付金额',
+  `deposit` decimal(10, 2) NULL DEFAULT NULL COMMENT '押金',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 49 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '预订' ROW_FORMAT = Compact;
 
@@ -191,6 +192,8 @@ CREATE TABLE `orders`  (
   `status` int(0) NULL DEFAULT NULL COMMENT '状态(1-已预订 2-已入住 3-已退房)',
   `remark` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '备注',
   `money` decimal(10, 2) NULL DEFAULT NULL COMMENT '实付金额',
+  `deposit` decimal(10, 2) NULL DEFAULT NULL COMMENT '押金',
+  `refund_deposit` decimal(10, 2) NULL DEFAULT NULL COMMENT '退还押金',
   `check_out_time` datetime(0) NULL DEFAULT NULL COMMENT '退房时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '入住' ROW_FORMAT = Compact;

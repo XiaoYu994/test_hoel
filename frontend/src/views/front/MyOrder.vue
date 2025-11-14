@@ -127,7 +127,7 @@
                                     </div>
                                     <div class="info-item">
                                         <span class="label">单价:</span>
-                                        <span class="value price">￥{{ item.money }}/晚</span>
+                                        <span class="value price">￥{{ item.room.category.price ? item.room.category.price.toFixed(2) : '0.00' }}/晚</span>
                                     </div>
                                 </div>
                             </div>
@@ -146,8 +146,20 @@
                                         <span class="value">{{ item.days }} 晚</span>
                                     </div>
                                     <div class="info-item">
-                                        <span class="label">总价:</span>
-                                        <span class="value price-total">￥{{ item.money * item.days }}</span>
+                                        <span class="label">房价:</span>
+                                        <span class="value price-total">￥{{ item.room.category.price ? (item.room.category.price * item.days).toFixed(2) : '0.00' }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="label">押金:</span>
+                                        <span class="value deposit">￥{{ item.deposit ? item.deposit.toFixed(2) : '0.00' }}</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="label">实付金额:</span>
+                                        <span class="value total">￥{{ item.money ? item.money.toFixed(2) : '0.00' }}</span>
+                                    </div>
+                                    <div class="info-item" v-if="item.status == 3">
+                                        <span class="label">退还押金:</span>
+                                        <span class="value refund">￥{{ item.refundDeposit ? item.refundDeposit.toFixed(2) : '0.00' }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -674,6 +686,21 @@ onMounted(() => {
             &.price, &.price-total {
                 color: #f56c6c;
                 font-weight: 600;
+            }
+            
+            &.deposit {
+                color: #E6A23C;
+                font-weight: 600;
+            }
+            
+            &.total {
+                color: #409EFF;
+                font-weight: 700;
+            }
+            
+            &.refund {
+                color: #67C23A;
+                font-weight: 700;
             }
         }
     }

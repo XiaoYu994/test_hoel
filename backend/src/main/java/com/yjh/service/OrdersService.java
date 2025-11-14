@@ -94,7 +94,9 @@ public class OrdersService {
         orders.setRoomId(orderQuery.getRoomId());
         orders.setStatus(2);
         java.math.BigDecimal deposit = room.getCategory().getDeposit() == null ? java.math.BigDecimal.ZERO : room.getCategory().getDeposit();
-        orders.setMoney(room.getCategory().getPrice().add(deposit));
+        java.math.BigDecimal totalPrice = room.getCategory().getPrice().multiply(new java.math.BigDecimal(orderQuery.getDays()));
+        orders.setMoney(totalPrice.add(deposit));
+        orders.setDeposit(deposit);
         ordersMapper.insert(orders);
         return new Result(true, StatusCode.OK,"操作成功");
     }

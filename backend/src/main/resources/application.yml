@@ -5,9 +5,9 @@ spring:
     name: yjh
   datasource:
     driverClassName: com.mysql.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/test_hoel?characterEncoding=utf8&serverTimezone=GMT&useSSL=false
-    username: username
-    password: 1234
+    url: jdbc:mysql://localhost:3306/db_yjh?characterEncoding=utf8&serverTimezone=GMT&useSSL=false
+    username: root
+    password: root
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss  #配置日期响应时的格式
     time-zone: GMT+8

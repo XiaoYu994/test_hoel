@@ -104,7 +104,15 @@
                                     </div>
                                     <div class="total-price">
                                         <i class="fas fa-wallet"></i>
-                                        总价: <span class="price-value">￥{{ scope.row.money * scope.row.days }}</span>
+                                        房价: <span class="price-value">￥{{ scope.row.money ? (scope.row.money * scope.row.days).toFixed(2) : '0.00' }}</span>
+                                    </div>
+                                    <div class="deposit-info">
+                                        <i class="fas fa-lock"></i>
+                                        押金: <span class="deposit-value">￥{{ scope.row.deposit ? scope.row.deposit.toFixed(2) : '0.00' }}</span>
+                                    </div>
+                                    <div class="total-amount">
+                                        <i class="fas fa-credit-card"></i>
+                                        应付: <span class="total-value">￥{{ (scope.row.money && scope.row.deposit) ? ((scope.row.money * scope.row.days) + scope.row.deposit).toFixed(2) : '0.00' }}</span>
                                     </div>
                                 </div>
                     </template>
@@ -596,7 +604,7 @@ onMounted(() => {
     display: flex;
     justify-content: space-around;
     
-    .check-in-date, .stay-duration, .total-price {
+    .check-in-date, .stay-duration, .total-price, .deposit-info, .total-amount {
         display: flex;
         align-items: center;
         
@@ -609,6 +617,17 @@ onMounted(() => {
     .price-value {
         color: #f56c6c;
         font-weight: 600;
+    }
+    
+    .deposit-value {
+        color: #E6A23C;
+        font-weight: 600;
+    }
+    
+    .total-value {
+        color: #409EFF;
+        font-weight: 700;
+        font-size: 15px;
     }
 }
 

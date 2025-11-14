@@ -119,9 +119,19 @@
               </el-tag>
             </template>
           </el-table-column>
+          <el-table-column align="center" label="房价" min-width="90">
+            <template #default="scope">
+              <span class="money-value">￥{{ (scope.row.room.category.price * scope.row.days).toFixed(2) }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" label="押金" min-width="90">
+            <template #default="scope">
+              <span class="deposit-value">￥{{ scope.row.deposit ? scope.row.deposit.toFixed(2) : '0.00' }}</span>
+            </template>
+          </el-table-column>
           <el-table-column align="center" label="实付金额" min-width="100">
             <template #default="scope">
-              <span class="money-value">￥{{ scope.row.money * scope.row.days }}</span>
+              <span class="money-value">￥{{ scope.row.money ? scope.row.money.toFixed(2) : '0.00' }}</span>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="200" align="center">
@@ -145,6 +155,15 @@
                   plain
                   class="action-button"
                 >退房</el-button>
+                <el-button 
+                  v-if="scope.row.status == 3" 
+                  @click="showOrderDetail(scope.row)" 
+                  type="info" 
+                  size="small"
+                  icon="el-icon-document" 
+                  plain
+                  class="action-button"
+                >详情</el-button>
                 <el-popconfirm 
                   title="确定删除该入住记录吗？" 
                   @confirm="deleteCofirm(scope.row)"
@@ -196,15 +215,51 @@
       title="退房" 
       v-model="showCheckOutDialog" 
       :before-close="handleCheckOutDialogClose"
-      width="500px"
+      width="600px"
       center
       :close-on-click-modal="false"
     >
       <el-form 
         label-position="right" 
-        label-width="80px"
+        label-width="100px"
         class="dialog-form"
       >
+        <el-form-item label="用户信息">
+          <div class="info-display">
+            <span>姓名：{{ checkoutDialogForm.member?.name }}</span>
+            <span>电话：{{ checkoutDialogForm.member?.phone }}</span>
+          </div>
+        </el-form-item>
+        <el-form-item label="身份证">
+          <div class="info-display">{{ checkoutDialogForm.member?.idcard }}</div>
+        </el-form-item>
+        <el-form-item label="房间信息">
+          <div class="info-display">
+            <span>房型：{{ checkoutDialogForm.room?.category?.categoryName }}</span>
+            <span>房号：{{ checkoutDialogForm.room?.roomNum }}</span>
+          </div>
+        </el-form-item>
+        <el-form-item label="入住天数">
+          <div class="info-display">{{ checkoutDialogForm.days }} 天</div>
+        </el-form-item>
+        <el-form-item label="房价">
+          <div class="info-display price-display">￥{{ checkoutDialogForm.room?.category?.price ? (checkoutDialogForm.room.category.price * checkoutDialogForm.days).toFixed(2) : '0.00' }}</div>
+        </el-form-item>
+        <el-form-item label="押金">
+          <div class="info-display deposit-display">￥{{ checkoutDialogForm.deposit ? checkoutDialogForm.deposit.toFixed(2) : '0.00' }}</div>
+        </el-form-item>
+        <el-form-item label="退还押金">
+          <el-input-number 
+            v-model="checkoutDialogForm.refundDeposit" 
+            :min="0" 
+            :max="checkoutDialogForm.deposit || 0"
+            :precision="2"
+            controls-position="right"
+            placeholder="请输入退还押金"
+            style="width: 100%;"
+          ></el-input-number>
+          <div class="hint-text">扣除押金：￥{{ ((checkoutDialogForm.deposit || 0) - (checkoutDialogForm.refundDeposit || 0)).toFixed(2) }}</div>
+        </el-form-item>
         <el-form-item label="备注">
           <el-input 
             type="textarea" 
@@ -219,6 +274,46 @@
         <div class="dialog-footer">
           <el-button @click="showCheckOutDialog = false" plain>取 消</el-button>
           <el-button type="primary" @click="checkOutDialogConfirm" :loading="submitLoading">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 订单详情弹框 -->
+    <el-dialog 
+      title="订单详情" 
+      v-model="showDetailDialog" 
+      width="600px"
+      center
+    >
+      <el-descriptions :column="2" border>
+        <el-descriptions-item label="用户姓名">{{ detailData.member?.name }}</el-descriptions-item>
+        <el-descriptions-item label="电话">{{ detailData.member?.phone }}</el-descriptions-item>
+        <el-descriptions-item label="身份证" :span="2">{{ detailData.member?.idcard }}</el-descriptions-item>
+        <el-descriptions-item label="房型">{{ detailData.room?.category?.categoryName }}</el-descriptions-item>
+        <el-descriptions-item label="房号">{{ detailData.room?.roomNum }}</el-descriptions-item>
+        <el-descriptions-item label="入住时间">{{ detailData.startTime?.slice(0,10) }}</el-descriptions-item>
+        <el-descriptions-item label="入住天数">{{ detailData.days }} 天</el-descriptions-item>
+        <el-descriptions-item label="房价">
+          <span class="price-value">￥{{ detailData.room?.category?.price ? (detailData.room.category.price * detailData.days).toFixed(2) : '0.00' }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="押金">
+          <span class="deposit-value">￥{{ detailData.deposit ? detailData.deposit.toFixed(2) : '0.00' }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="实付金额">
+          <span class="money-value">￥{{ detailData.money ? detailData.money.toFixed(2) : '0.00' }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="退还押金">
+          <span class="refund-value">￥{{ detailData.refundDeposit ? detailData.refundDeposit.toFixed(2) : '0.00' }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="退房时间" v-if="detailData.checkOutTime">{{ detailData.checkOutTime.slice(0,19) }}</el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="getStatusType(detailData.status)">{{ getStatusText(detailData.status) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2" v-if="detailData.remark">{{ detailData.remark }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="showDetailDialog = false">关 闭</el-button>
         </div>
       </template>
     </el-dialog>
@@ -247,6 +342,8 @@ const memberList = ref([])
 const checkoutDialogForm = reactive({})
 const showCheckOutDialog = ref(false)
 const submitLoading = ref(false)
+const showDetailDialog = ref(false)
+const detailData = reactive({})
 
 function tableRowClassName({ row, rowIndex }) {
   return rowIndex % 2 === 0 ? 'even-row' : 'odd-row'
@@ -346,9 +443,17 @@ function handleCheckOutDialogClose() {
   }).catch(() => {})
 }
 
-function checkOutOrder({ id }) {
+function checkOutOrder(row) {
   showCheckOutDialog.value = true
-  Object.assign(checkoutDialogForm, { id })
+  Object.assign(checkoutDialogForm, { 
+    ...row,
+    refundDeposit: row.deposit || 0 // 默认全额退还押金
+  })
+}
+
+function showOrderDetail(row) {
+  showDetailDialog.value = true
+  Object.assign(detailData, { ...row })
 }
 
 async function checkOutDialogConfirm() {
@@ -484,6 +589,11 @@ onMounted(async () => {
         color: #ff6b6b;
       }
       
+      .deposit-value {
+        font-weight: bold;
+        color: #E6A23C;
+      }
+      
       .empty-state {
         text-align: center;
         padding: 40px 0;
@@ -514,6 +624,31 @@ onMounted(async () => {
   .textarea-input {
     width: 100%;
   }
+  
+  .info-display {
+    display: flex;
+    gap: 20px;
+    color: #606266;
+    font-size: 14px;
+  }
+  
+  .price-display {
+    color: #409EFF;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  
+  .deposit-display {
+    color: #E6A23C;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  
+  .hint-text {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #909399;
+  }
 }
 
 // 表格行样式
@@ -541,5 +676,26 @@ onMounted(async () => {
     margin-bottom: 5px;
     padding: 6px 10px;
   }
+}
+
+// 订单详情样式
+.price-value {
+  color: #409EFF;
+  font-weight: bold;
+}
+
+.deposit-value {
+  color: #E6A23C;
+  font-weight: bold;
+}
+
+.refund-value {
+  color: #67C23A;
+  font-weight: bold;
+}
+
+.money-value {
+  color: #ff6b6b;
+  font-weight: bold;
 }
 </style>

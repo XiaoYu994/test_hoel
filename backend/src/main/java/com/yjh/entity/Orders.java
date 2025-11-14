@@ -26,6 +26,10 @@ public class Orders {
     private String remark;// 备注
 	@TableField("money")
     private BigDecimal money;// 已付金额
+	@TableField("deposit")
+    private BigDecimal deposit;// 押金
+	@TableField("refund_deposit")
+    private BigDecimal refundDeposit;// 退还押金
     @TableField("check_out_time")
     private Date checkOutTime;// 退房时间
 
@@ -118,5 +122,21 @@ public class Orders {
 
     public void setMember(Member member) {
         this.member = member;
+    }
+
+    public BigDecimal getDeposit() {
+        return deposit;
+    }
+
+    public void setDeposit(BigDecimal deposit) {
+        this.deposit = deposit;
+    }
+
+    public BigDecimal getRefundDeposit() {
+        return refundDeposit;
+    }
+
+    public void setRefundDeposit(BigDecimal refundDeposit) {
+        this.refundDeposit = refundDeposit;
     }
 }

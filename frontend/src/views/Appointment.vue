@@ -109,14 +109,32 @@
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="已付金额" width="90">
+          <el-table-column align="center" label="房价" width="90">
             <template #default="scope">
-              <span class="money-value">￥{{ scope.row.money * scope.row.days }}</span>
+              <span class="money-value">￥{{ scope.row.money ? (scope.row.money * scope.row.days).toFixed(2) : '0.00' }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" min-width="190" align="center">
+          <el-table-column align="center" label="押金" width="90">
+            <template #default="scope">
+              <span class="deposit-value">￥{{ scope.row.deposit ? scope.row.deposit.toFixed(2) : '0.00' }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" label="应付金额" width="100">
+            <template #default="scope">
+              <span class="total-value">￥{{ scope.row.money && scope.row.deposit ? ((scope.row.money * scope.row.days) + scope.row.deposit).toFixed(2) : '0.00' }}</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" min-width="240" align="center">
             <template #default="scope">
               <div class="action-buttons">
+                <el-button 
+                  @click="showAppointmentDetail(scope.row)" 
+                  type="info" 
+                  size="small" 
+                  icon="el-icon-document"
+                  plain
+                  class="action-button"
+                >详情</el-button>
                 <el-button 
                   v-if="scope.row.status == 1" 
                   @click="handleCofirmAppointemnt(scope.row)" 
@@ -211,6 +229,45 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 预约详情弹框 -->
+    <el-dialog 
+      title="预约详情" 
+      v-model="showDetailDialog" 
+      width="600px"
+      center
+    >
+      <el-descriptions :column="2" border>
+        <el-descriptions-item label="用户姓名">{{ detailData.member?.name }}</el-descriptions-item>
+        <el-descriptions-item label="电话">{{ detailData.member?.phone }}</el-descriptions-item>
+        <el-descriptions-item label="身份证" :span="2">{{ detailData.member?.idcard }}</el-descriptions-item>
+        <el-descriptions-item label="性别">
+          <el-tag :type="detailData.member?.gender == 1 ? 'primary' : 'danger'">{{ detailData.member?.gender == 1 ? '男' : '女' }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="房型">{{ detailData.room?.category?.categoryName }}</el-descriptions-item>
+        <el-descriptions-item label="房号">{{ detailData.room?.roomNum }}</el-descriptions-item>
+        <el-descriptions-item label="入住时间">{{ detailData.startTime?.slice(0,10) }}</el-descriptions-item>
+        <el-descriptions-item label="入住天数">{{ detailData.days }} 天</el-descriptions-item>
+        <el-descriptions-item label="房价">
+          <span class="price-value">￥{{ detailData.money ? (detailData.money * detailData.days).toFixed(2) : '0.00' }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="押金">
+          <span class="deposit-value">￥{{ detailData.deposit ? detailData.deposit.toFixed(2) : '0.00' }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="应付金额">
+          <span class="total-value">￥{{ (detailData.money && detailData.deposit) ? ((detailData.money * detailData.days) + detailData.deposit).toFixed(2) : '0.00' }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag :type="getStatusType(detailData.status)">{{ getStatusText(detailData.status) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2" v-if="detailData.remark">{{ detailData.remark }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" @click="showDetailDialog = false">关 闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -234,6 +291,8 @@ const searchForm = reactive({})
 const dialogFormVisible = ref(false)
 const dialogForm = reactive({})
 const memberList = ref([])
+const showDetailDialog = ref(false)
+const detailData = reactive({})
 
 function tableRowClassName({ row, rowIndex }) {
   return rowIndex % 2 === 0 ? 'even-row' : 'odd-row'
@@ -274,6 +333,11 @@ function handleCofirmAppointemnt(row) {
 function handleCancelAppointemnt(row) {
   dialogFormVisible.value = true
   Object.assign(dialogForm, { ...row })
+}
+
+function showAppointmentDetail(row) {
+  showDetailDialog.value = true
+  Object.assign(detailData, { ...row })
 }
 
 function handleSizeChange(val) {
@@ -422,6 +486,16 @@ onMounted(async () => {
         color: #ff6b6b;
       }
       
+      .deposit-value {
+        font-weight: bold;
+        color: #E6A23C;
+      }
+      
+      .total-value {
+        font-weight: bold;
+        color: #409EFF;
+      }
+      
       .empty-state {
         text-align: center;
         padding: 40px 0;
@@ -476,5 +550,22 @@ onMounted(async () => {
   .action-button {
     margin: 0;
   }
+}
+
+// 预约详情样式
+.price-value {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+.deposit-value {
+  color: #E6A23C;
+  font-weight: bold;
+}
+
+.total-value {
+  color: #409EFF;
+  font-weight: bold;
+  font-size: 16px;
 }
 </style>

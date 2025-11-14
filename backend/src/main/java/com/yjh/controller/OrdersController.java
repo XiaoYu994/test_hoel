@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -118,10 +119,16 @@ public class OrdersController {
      * @return
      */
     @GetMapping("checkOut")
-    public Result confirm(Integer id,String remark){
+    public Result confirm(Integer id,String remark,BigDecimal refundDeposit){
         Orders orders = ordersService.findById(id);
         orders.setRemark(remark);
         orders.setStatus(3);
+        orders.setCheckOutTime(new java.util.Date());
+        // 如果没有传入refundDeposit，则默认全额退还押金
+        if(refundDeposit == null){
+            refundDeposit = orders.getDeposit() == null ? java.math.BigDecimal.ZERO : orders.getDeposit();
+        }
+        orders.setRefundDeposit(refundDeposit);
         ordersService.modify(orders);
         return new Result(true, StatusCode.OK,"操作成功");
     }
