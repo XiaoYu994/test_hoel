@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
 
@@ -107,5 +109,63 @@ public class OrdersService {
 
     public void removeById(Integer id) {
         ordersMapper.deleteById(id);
+    }
+
+    public Result checkOut(Integer id, String remark, BigDecimal refundDeposit) {
+        Orders orders = ordersMapper.selectById(id);
+        if (orders == null) {
+            return new Result(false, StatusCode.ERROR, "订单不存在");
+        }
+        if (orders.getStatus() != null && orders.getStatus() == 3) {
+            return new Result(false, StatusCode.ERROR, "该订单已退房");
+        }
+        Room room = roomService.findById(orders.getRoomId());
+        if (room == null || room.getCategory() == null) {
+            return new Result(false, StatusCode.ERROR, "房间信息异常");
+        }
+        BigDecimal pricePerDay = room.getCategory().getPrice() != null
+                ? room.getCategory().getPrice() : BigDecimal.ZERO;
+
+        Date now = new Date();
+        int bookedDays = orders.getDays() == null ? 0 : orders.getDays();
+        int stayedDays = calculateStayedDays(orders.getStartTime(), now, bookedDays);
+        int unusedDays = Math.max(bookedDays - stayedDays, 0);
+        BigDecimal refundRoomFee = pricePerDay.multiply(new BigDecimal(unusedDays));
+
+        BigDecimal orderDeposit = orders.getDeposit() == null ? BigDecimal.ZERO : orders.getDeposit();
+        if (refundDeposit == null) {
+            refundDeposit = orderDeposit;
+        }
+        if (refundDeposit.compareTo(orderDeposit) > 0) {
+            refundDeposit = orderDeposit;
+        }
+        if (refundDeposit.compareTo(BigDecimal.ZERO) < 0) {
+            refundDeposit = BigDecimal.ZERO;
+        }
+
+        orders.setRemark(remark);
+        orders.setStatus(3);
+        orders.setCheckOutTime(now);
+        orders.setRefundDeposit(refundDeposit);
+        orders.setRefundMoney(refundRoomFee);
+        ordersMapper.updateById(orders);
+        String message = String.format("退房成功，已退还押金￥%s，房费￥%s",
+                refundDeposit.setScale(2, RoundingMode.HALF_UP).toPlainString(),
+                refundRoomFee.setScale(2, RoundingMode.HALF_UP).toPlainString());
+        return new Result(true, StatusCode.OK, message);
+    }
+
+    private int calculateStayedDays(Date startTime, Date now, Integer bookedDays) {
+        if (startTime == null || now == null || bookedDays == null || bookedDays <= 0) {
+            return 0;
+        }
+        long diff = now.getTime() - startTime.getTime();
+        if (diff <= 0) {
+            return 1;
+        }
+        long millisPerDay = 1000L * 60 * 60 * 24;
+        long ceilDays = (long) Math.ceil(diff / (double) millisPerDay);
+        int stayed = (int) Math.max(1, ceilDays);
+        return Math.min(stayed, bookedDays);
     }
 }

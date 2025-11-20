@@ -120,17 +120,7 @@ public class OrdersController {
      */
     @GetMapping("checkOut")
     public Result confirm(Integer id,String remark,BigDecimal refundDeposit){
-        Orders orders = ordersService.findById(id);
-        orders.setRemark(remark);
-        orders.setStatus(3);
-        orders.setCheckOutTime(new java.util.Date());
-        // 如果没有传入refundDeposit，则默认全额退还押金
-        if(refundDeposit == null){
-            refundDeposit = orders.getDeposit() == null ? java.math.BigDecimal.ZERO : orders.getDeposit();
-        }
-        orders.setRefundDeposit(refundDeposit);
-        ordersService.modify(orders);
-        return new Result(true, StatusCode.OK,"操作成功");
+        return ordersService.checkOut(id, remark, refundDeposit);
     }
 
 }
