@@ -194,6 +194,7 @@ CREATE TABLE `orders`  (
   `money` decimal(10, 2) NULL DEFAULT NULL COMMENT '实付金额',
   `deposit` decimal(10, 2) NULL DEFAULT NULL COMMENT '押金',
   `refund_deposit` decimal(10, 2) NULL DEFAULT NULL COMMENT '退还押金',
+  `refund_money` decimal(10, 2) NULL DEFAULT NULL COMMENT '退还房费',
   `check_out_time` datetime(0) NULL DEFAULT NULL COMMENT '退房时间',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 21 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '入住' ROW_FORMAT = Compact;
@@ -201,16 +202,17 @@ CREATE TABLE `orders`  (
 -- ----------------------------
 -- Records of orders
 -- ----------------------------
-INSERT INTO `orders` VALUES (10, 3, 2, '2025-05-19 00:00:00', 1, 3, NULL, 350.00, NULL);
-INSERT INTO `orders` VALUES (11, 4, 8, '2025-05-16 00:00:00', 3, 2, NULL, 350.00, NULL);
-INSERT INTO `orders` VALUES (12, 7, 6, '2025-05-13 00:00:00', 2, 3, '客人提前退房', 120.00, '2025-05-14 10:30:00');
-INSERT INTO `orders` VALUES (13, 3, 7, '2025-05-15 00:00:00', 2, 2, NULL, 300.00, NULL);
-INSERT INTO `orders` VALUES (14, 4, 11, '2025-05-17 00:00:00', 4, 1, NULL, 680.00, NULL);
-INSERT INTO `orders` VALUES (15, 3, 10, '2025-05-13 00:00:00', 1, 3, NULL, 450.00, '2025-05-14 09:15:00');
-INSERT INTO `orders` VALUES (17, 4, 6, '2025-05-12 00:00:00', 1, 3, NULL, 120.00, '2025-05-13 11:45:00');
-INSERT INTO `orders` VALUES (18, 3, 12, '2025-05-18 00:00:00', 3, 1, NULL, 120.00, NULL);
-INSERT INTO `orders` VALUES (19, 3, 6, '2025-05-20 00:00:00', 2, 2, NULL, 120.00, NULL);
-INSERT INTO `orders` VALUES (21, 3, 10, '2025-09-27 00:00:00', 1, 3, '12345', 450.00, NULL);
+INSERT INTO `orders` (`id`, `member_id`, `room_id`, `start_time`, `days`, `status`, `remark`, `money`, `deposit`, `refund_deposit`, `refund_money`, `check_out_time`) VALUES
+(10, 3, 2, '2025-05-19 00:00:00', 1, 3, NULL, 350.00, NULL, NULL, NULL, NULL),
+(11, 4, 8, '2025-05-16 00:00:00', 3, 2, NULL, 350.00, NULL, NULL, NULL, NULL),
+(12, 7, 6, '2025-05-13 00:00:00', 2, 3, '客人提前退房', 120.00, NULL, NULL, NULL, '2025-05-14 10:30:00'),
+(13, 3, 7, '2025-05-15 00:00:00', 2, 2, NULL, 300.00, NULL, NULL, NULL, NULL),
+(14, 4, 11, '2025-05-17 00:00:00', 4, 1, NULL, 680.00, NULL, NULL, NULL, NULL),
+(15, 3, 10, '2025-05-13 00:00:00', 1, 3, NULL, 450.00, NULL, NULL, NULL, '2025-05-14 09:15:00'),
+(17, 4, 6, '2025-05-12 00:00:00', 1, 3, NULL, 120.00, NULL, NULL, NULL, '2025-05-13 11:45:00'),
+(18, 3, 12, '2025-05-18 00:00:00', 3, 1, NULL, 120.00, NULL, NULL, NULL, NULL),
+(19, 3, 6, '2025-05-20 00:00:00', 2, 2, NULL, 120.00, NULL, NULL, NULL, NULL),
+(21, 3, 10, '2025-09-27 00:00:00', 1, 3, '12345', 450.00, NULL, NULL, NULL, NULL);
 
 -- ----------------------------
 -- Table structure for room

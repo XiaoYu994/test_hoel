@@ -134,6 +134,18 @@
               <span class="money-value">￥{{ scope.row.money ? scope.row.money.toFixed(2) : '0.00' }}</span>
             </template>
           </el-table-column>
+          <el-table-column align="center" label="退还房费" min-width="110">
+            <template #default="scope">
+              <span v-if="scope.row.status == 3" class="refund-value">￥{{ formatMoney(scope.row.refundMoney) }}</span>
+              <span v-else class="placeholder-text">-</span>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" label="退还总额" min-width="110">
+            <template #default="scope">
+              <span v-if="scope.row.status == 3" class="total-refund-value">￥{{ formatMoney((scope.row.refundMoney || 0) + (scope.row.refundDeposit || 0)) }}</span>
+              <span v-else class="placeholder-text">-</span>
+            </template>
+          </el-table-column>
           <el-table-column label="操作" width="200" align="center">
             <template #default="scope">
               <div class="action-buttons">
@@ -242,11 +254,18 @@
         <el-form-item label="入住天数">
           <div class="info-display">{{ checkoutDialogForm.days }} 天</div>
         </el-form-item>
+        <el-form-item label="实际入住天数">
+          <div class="info-display">{{ checkoutDialogForm.actualStayDays || 0 }} 天</div>
+        </el-form-item>
         <el-form-item label="房价">
           <div class="info-display price-display">￥{{ checkoutDialogForm.room?.category?.price ? (checkoutDialogForm.room.category.price * checkoutDialogForm.days).toFixed(2) : '0.00' }}</div>
         </el-form-item>
         <el-form-item label="押金">
           <div class="info-display deposit-display">￥{{ checkoutDialogForm.deposit ? checkoutDialogForm.deposit.toFixed(2) : '0.00' }}</div>
+        </el-form-item>
+        <el-form-item label="可退房费">
+          <div class="info-display refund-value">￥{{ formatMoney(checkoutDialogForm.refundRoomFee) }}</div>
+          <div class="hint-text">未入住天数：{{ checkoutDialogForm.unusedDays || 0 }} 天</div>
         </el-form-item>
         <el-form-item label="退还押金">
           <el-input-number 
@@ -260,6 +279,9 @@
           ></el-input-number>
           <div class="hint-text">扣除押金：￥{{ ((checkoutDialogForm.deposit || 0) - (checkoutDialogForm.refundDeposit || 0)).toFixed(2) }}</div>
         </el-form-item>
+        <el-form-item label="预计返还">
+          <div class="info-display total-refund-value">￥{{ formatMoney(checkoutDialogForm.totalRefund) }}</div>
+        </el-form-item>
         <el-form-item label="备注">
           <el-input 
             type="textarea" 
@@ -272,7 +294,7 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="showCheckOutDialog = false" plain>取 消</el-button>
+          <el-button @click="handleCancelCheckoutDialog" plain>取 消</el-button>
           <el-button type="primary" @click="checkOutDialogConfirm" :loading="submitLoading">确 定</el-button>
         </div>
       </template>
@@ -305,6 +327,12 @@
         <el-descriptions-item label="退还押金">
           <span class="refund-value">￥{{ detailData.refundDeposit ? detailData.refundDeposit.toFixed(2) : '0.00' }}</span>
         </el-descriptions-item>
+        <el-descriptions-item label="退还房费">
+          <span class="refund-value">￥{{ formatMoney(detailData.refundMoney) }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="总退款">
+          <span class="total-refund-value">￥{{ formatMoney((detailData.refundMoney || 0) + (detailData.refundDeposit || 0)) }}</span>
+        </el-descriptions-item>
         <el-descriptions-item label="退房时间" v-if="detailData.checkOutTime">{{ detailData.checkOutTime.slice(0,19) }}</el-descriptions-item>
         <el-descriptions-item label="状态">
           <el-tag :type="getStatusType(detailData.status)">{{ getStatusText(detailData.status) }}</el-tag>
@@ -321,13 +349,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {findOrdersPageAPI,removeOrdersAPI,confirmAPI,checkOutAPI} from "@/api/orders";
 import { findAllMemberAPI } from '@/api/member'
-
-const router = useRouter()
+import dayjs from 'dayjs'
 
 const list = ref(null)
 const listLoading = ref(true)
@@ -344,6 +370,53 @@ const showCheckOutDialog = ref(false)
 const submitLoading = ref(false)
 const showDetailDialog = ref(false)
 const detailData = reactive({})
+
+function resetCheckoutForm() {
+  Object.keys(checkoutDialogForm).forEach(key => {
+    delete checkoutDialogForm[key]
+  })
+}
+
+function formatMoney(value) {
+  const num = Number(value || 0)
+  return num.toFixed(2)
+}
+
+function calculateStayedDays(startTime, bookedDays) {
+  if (!startTime || !bookedDays) return 0
+  const now = dayjs()
+  const start = dayjs(startTime)
+  const diff = now.diff(start, 'day', true)
+  const stayed = Math.max(1, Math.ceil(diff <= 0 ? 1 : diff))
+  return Math.min(stayed, bookedDays)
+}
+
+function updateRefundPreview() {
+  const deposit = Number(checkoutDialogForm.refundDeposit || 0)
+  const refundRoom = Number(checkoutDialogForm.refundRoomFee || 0)
+  checkoutDialogForm.totalRefund = Number((deposit + refundRoom).toFixed(2))
+}
+
+function calculateCheckoutSnapshot() {
+  const bookedDays = checkoutDialogForm.days || 0
+  if (!bookedDays) {
+    checkoutDialogForm.actualStayDays = 0
+    checkoutDialogForm.unusedDays = 0
+    checkoutDialogForm.refundRoomFee = 0
+    updateRefundPreview()
+    return
+  }
+  checkoutDialogForm.actualStayDays = calculateStayedDays(checkoutDialogForm.startTime, bookedDays)
+  checkoutDialogForm.unusedDays = Math.max(bookedDays - checkoutDialogForm.actualStayDays, 0)
+  const pricePerDay = Number(checkoutDialogForm.room?.category?.price || 0)
+  checkoutDialogForm.refundRoomFee = Number((pricePerDay * checkoutDialogForm.unusedDays).toFixed(2))
+  updateRefundPreview()
+}
+
+watch(
+  () => checkoutDialogForm.refundDeposit,
+  () => updateRefundPreview()
+)
 
 function tableRowClassName({ row, rowIndex }) {
   return rowIndex % 2 === 0 ? 'even-row' : 'odd-row'
@@ -439,16 +512,27 @@ function handleCheckOutDialogClose() {
     type: 'warning'
   }).then(() => {
     showCheckOutDialog.value = false
-    checkoutDialogForm.remark = ''
+    resetCheckoutForm()
   }).catch(() => {})
+}
+
+function handleCancelCheckoutDialog() {
+  showCheckOutDialog.value = false
+  resetCheckoutForm()
 }
 
 function checkOutOrder(row) {
   showCheckOutDialog.value = true
+  resetCheckoutForm()
   Object.assign(checkoutDialogForm, { 
     ...row,
-    refundDeposit: row.deposit || 0 // 默认全额退还押金
+    refundDeposit: row.deposit || 0,
+    actualStayDays: 0,
+    unusedDays: 0,
+    refundRoomFee: 0,
+    totalRefund: row.deposit || 0
   })
+  calculateCheckoutSnapshot()
 }
 
 function showOrderDetail(row) {
@@ -459,10 +543,15 @@ function showOrderDetail(row) {
 async function checkOutDialogConfirm() {
   submitLoading.value = true
   try {
-    const res = await checkOutAPI(checkoutDialogForm)
+    const res = await checkOutAPI({
+      id: checkoutDialogForm.id,
+      remark: checkoutDialogForm.remark,
+      refundDeposit: checkoutDialogForm.refundDeposit
+    })
     ElMessage({ message: res.message, type: res.flag ? 'success' : 'error' })
     if (res.flag) {
       showCheckOutDialog.value = false
+      resetCheckoutForm()
       fetchData()
     }
   } catch (error) {
@@ -697,5 +786,14 @@ onMounted(async () => {
 .money-value {
   color: #ff6b6b;
   font-weight: bold;
+}
+
+.total-refund-value {
+  color: #13ce66;
+  font-weight: bold;
+}
+
+.placeholder-text {
+  color: #C0C4CC;
 }
 </style>
