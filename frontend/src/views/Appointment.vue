@@ -74,21 +74,29 @@
           <el-table-column align="center" label="身份证" prop="member.idcard" width="150" show-overflow-tooltip></el-table-column>
           <el-table-column align="center" label="性别" width="70">
             <template #default="scope">
-              <el-tag 
-                :type="scope.row.member.gender == 1 ? 'success' : 'danger'" 
-                effect="light"
-                size="small"
-              >
-                {{ scope.row.member.gender == 1 ? '男' : '女' }}
-              </el-tag>
+              <div v-if="scope.row.member">
+                <el-tag 
+                  :type="scope.row.member.gender == 1 ? 'success' : 'danger'" 
+                  effect="light"
+                  size="small"
+                >
+                  {{ scope.row.member.gender == 1 ? '男' : '女' }}
+                </el-tag>
+              </div>
+              <span v-else>--</span>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="房型" prop="room.category.categoryName" width="110"></el-table-column>
+          <el-table-column align="center" label="房型" prop="room.category.categoryName" width="110">
+            <template #default="scope">
+              {{ scope.row.room?.category?.categoryName || '--' }}
+            </template>
+          </el-table-column>
           <el-table-column align="center" label="房号" width="90">
             <template #default="scope">
-              <el-tag type="primary" effect="plain" class="room-number">
+              <el-tag type="primary" effect="plain" class="room-number" v-if="scope.row.room">
                 {{ scope.row.room.roomNum }}
               </el-tag>
+              <span v-else>--</span>
             </template>
           </el-table-column>
           <el-table-column align="center" label="入住时间" width="110">

@@ -64,10 +64,8 @@ INSERT INTO `appointment` VALUES (24, 3, 4, '2025-05-18', 1, 1, NULL, 350.00);
 INSERT INTO `appointment` VALUES (25, 3, 2, '2025-05-19', 1, 2, NULL, 350.00);
 INSERT INTO `appointment` VALUES (27, 3, 7, '2025-05-15', 2, 2, NULL, 300.00);
 INSERT INTO `appointment` VALUES (28, 4, 8, '2025-05-16', 3, 2, NULL, 350.00);
-INSERT INTO `appointment` VALUES (29, 7, 9, '2025-05-17', 1, 3, '客户取消预订', 600.00);
 INSERT INTO `appointment` VALUES (30, 3, 10, '2025-05-18', 2, 1, NULL, 450.00);
 INSERT INTO `appointment` VALUES (31, 4, 11, '2025-05-17', 4, 2, NULL, 680.00);
-INSERT INTO `appointment` VALUES (32, 7, 12, '2025-05-16', 2, 1, NULL, 120.00);
 INSERT INTO `appointment` VALUES (34, 4, 6, '2025-05-13', 2, 2, NULL, 120.00);
 INSERT INTO `appointment` VALUES (39, 3, 6, '2025-05-20', 2, 2, NULL, 120.00);
 INSERT INTO `appointment` VALUES (40, 3, 1, '2025-09-17', 1, 2, NULL, 300.00);
@@ -205,7 +203,6 @@ CREATE TABLE `orders`  (
 INSERT INTO `orders` (`id`, `member_id`, `room_id`, `start_time`, `days`, `status`, `remark`, `money`, `deposit`, `refund_deposit`, `refund_money`, `check_out_time`) VALUES
 (10, 3, 2, '2025-05-19 00:00:00', 1, 3, NULL, 350.00, NULL, NULL, NULL, NULL),
 (11, 4, 8, '2025-05-16 00:00:00', 3, 2, NULL, 350.00, NULL, NULL, NULL, NULL),
-(12, 7, 6, '2025-05-13 00:00:00', 2, 3, '客人提前退房', 120.00, NULL, NULL, NULL, '2025-05-14 10:30:00'),
 (13, 3, 7, '2025-05-15 00:00:00', 2, 2, NULL, 300.00, NULL, NULL, NULL, NULL),
 (14, 4, 11, '2025-05-17 00:00:00', 4, 1, NULL, 680.00, NULL, NULL, NULL, NULL),
 (15, 3, 10, '2025-05-13 00:00:00', 1, 3, NULL, 450.00, NULL, NULL, NULL, '2025-05-14 09:15:00'),
