@@ -14,12 +14,6 @@
                                 :key="item.id"></el-option>
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="状态">
-                        <el-select v-model="formInline.canUse" placeholder="房间状态" clearable class="custom-select">
-                            <el-option label="可预订" :value="true"></el-option>
-                            <el-option label="已满房" :value="false"></el-option>
-                        </el-select>
-                    </el-form-item>
                     <el-form-item>
                         <el-button type="primary" @click="onSubmit" class="search-button">
                             <i class="fas fa-search"></i> 查询
@@ -29,24 +23,24 @@
             </div>
             
             <div class="room-list">
-                <div v-for="item in paginatedRoomList" :key="item.id" class="room-card"
-                    @click="$router.push(`/front/roomDetails/${item.id}`)">
+                <div v-for="item in paginatedList" :key="item.id" class="room-card"
+                    @click="$router.push(`/front/categoryDetails/${item.id}`)">
                     <div class="room-image-container">
-                        <img :src="resolveImage(item.category.photo)" class="room-image">
+                        <img :src="resolveImage(item.photo)" class="room-image">
                         <div class="room-status">
-                            <el-tag size="medium" :type="item.canUse ? 'success' : 'danger'" effect="dark" class="status-tag">
+                            <el-tag size="medium" type="success" effect="dark" class="status-tag">
                                 <div class="status-content">
-                                    <i :class="item.canUse ? 'fas fa-check-circle' : 'fas fa-ban'"></i>
-                                    <span>{{ item.canUse ? '可预订' : '已满房' }}</span>
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>可预订</span>
                                 </div>
                             </el-tag>
                         </div>
                     </div>
                     <div class="room-info">
-                        <h3 class="room-title">{{ item.category.categoryName }}-{{ item.roomNum }}</h3>
+                        <h3 class="room-title">{{ item.categoryName }}</h3>
                         <div class="room-price">
                             <span class="price-label">每晚</span>
-                            <span class="price-value">¥{{ item.category.price }}</span>
+                            <span class="price-value">¥{{ item.price }}</span>
                         </div>
                         <div class="room-action">
                             <el-button type="text" class="details-button">查看详情 <i class="fas fa-arrow-right"></i></el-button>
@@ -61,23 +55,23 @@
             </div>
             
             <!-- 分页组件 -->
-            <div class="pagination-container" v-if="roomList.length > 0">
+            <div class="pagination-container" v-if="categoryList.length > 0">
                 <el-pagination
                     background
                     @current-change="handleCurrentChange"
                     :current-page.sync="currentPage"
                     :page-size="pageSize"
                     layout="prev, pager, next, jumper"
-                    :total="roomList.length"
+                    :total="categoryList.length"
                     :hide-on-single-page="false"
                 >
                 </el-pagination>
             </div>
             
             <!-- 无数据提示 -->
-            <div class="empty-state" v-if="roomList.length === 0">
+            <div class="empty-state" v-if="categoryList.length === 0">
                 <i class="fas fa-bed"></i>
-                <p>暂无符合条件的房间</p>
+                <p>暂无符合条件的房型</p>
             </div>
         </div>
     </div>
@@ -88,20 +82,15 @@ import { ref, computed, onMounted, getCurrentInstance } from 'vue'
 import { useRoute } from 'vue-router'
 import dayjs from 'dayjs'
 import { findAllCategoryAPI } from '@/api/category'
-import { findRoomListAPI } from '@/api/room'
 
 defineOptions({ name: 'FrontCategory' })
-
-// Element Plus v2+ 使用 disabled-date 属性禁选日期
 
 const formInline = ref({
   startDate: dayjs().format('YYYY-MM-DD'),
   categoryId: null,
-  canUse: null,
 })
 
 const categoryList = ref([])
-const roomList = ref([])
 const currentPage = ref(1)
 const pageSize = ref(6)
 
@@ -112,10 +101,14 @@ function resolveImage(path) {
   return proxy?.$resolveImageUrl?.(path) || ''
 }
 
-const paginatedRoomList = computed(() => {
+const paginatedList = computed(() => {
+  let list = categoryList.value
+  if (formInline.value.categoryId) {
+    list = list.filter(item => item.id === formInline.value.categoryId)
+  }
   const start = (currentPage.value - 1) * pageSize.value
   const end = start + pageSize.value
-  return roomList.value.slice(start, end)
+  return list.slice(start, end)
 })
 
 function loadFontAwesome() {
@@ -127,23 +120,13 @@ function loadFontAwesome() {
   }
 }
 
-function disabledDate(time) {
-  return dayjs(time).isBefore(dayjs(), 'day')
-}
-
 async function getCategoryList() {
   const { data } = await findAllCategoryAPI()
   categoryList.value = data
 }
 
-async function getList() {
-  const { data } = await findRoomListAPI(formInline.value)
-  roomList.value = data
-  currentPage.value = 1
-}
-
 function onSubmit() {
-  getList()
+  currentPage.value = 1
 }
 
 function handleCurrentChange(val) {
@@ -156,7 +139,6 @@ onMounted(() => {
     formInline.value.categoryId = parseInt(route.query.categoryId)
   }
   getCategoryList()
-  getList()
   loadFontAwesome()
 })
 </script>

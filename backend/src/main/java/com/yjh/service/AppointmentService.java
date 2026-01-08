@@ -48,6 +48,15 @@ public class AppointmentService {
         for (Appointment a : list) {
             Room room = roomService.findById(a.getRoomId());
             a.setRoom(room);
+            // 填充房型信息
+            if (a.getCategoryId() != null) {
+                Category category = categoryService.findById(a.getCategoryId());
+                a.setCategory(category);
+            } else if (room != null && room.getCategoryId() != null) {
+                // 兼容旧数据，如果有roomId但没有categoryId
+                Category category = categoryService.findById(room.getCategoryId());
+                a.setCategory(category);
+            }
             Member member = memberMapper.selectById(a.getMemberId());
             a.setMember(member);
         }
@@ -81,10 +90,10 @@ public class AppointmentService {
     }
 
     public Result add(Appointment appointment) {
-        // 判断是否存在与当前预约时间区间重叠的【同一用户、同一房间】待确认预约
+        // 判断是否存在与当前预约时间区间重叠的【同一用户、同一房型】待确认预约
         List<Appointment> pendingList = appointmentMapper.selectList(new EntityWrapper<Appointment>()
                 .eq("member_id", appointment.getMemberId())
-                .eq("room_id", appointment.getRoomId())
+                .eq("category_id", appointment.getCategoryId())
                 .eq("status", 1));
         if (pendingList != null && !pendingList.isEmpty()) {
             try {
@@ -98,28 +107,23 @@ public class AppointmentService {
                     Date exEndInclusive = DateUtils.addDays(exStart, exist.getDays() - 1);
                     boolean overlapped = !(newEndInclusive.before(exStart) || newStart.after(exEndInclusive));
                     if (overlapped) {
-                        return new Result(false, StatusCode.ERROR, "请勿重复预订！");
+                        return new Result(false, StatusCode.ERROR, "请勿重复预订同一种房型！");
                     }
                 }
             } catch (ParseException e) {
                 e.printStackTrace();
             }
         }
-        //判断是否已预约或者已入住这个房间
-//        ArrayList<Integer> statusList = new ArrayList<>();
-//        statusList.add(1);//已预订
-//        statusList.add(2);//已入住
-//        List<Orders> ordersList = ordersMapper.selectList(new EntityWrapper()
-//                .eq("room_id", appointment.getRoomId())
-//                .in("status", statusList));
-//        if(ordersList.size() != 0){
-//            return new Result(false, StatusCode.ERROR, "预订失败,房间已满！");
-//        }
-        //插入预约表
-        Room r = roomService.findById(appointment.getRoomId());
+
+        // 获取房型信息
+        Category category = categoryService.findById(appointment.getCategoryId());
+        if (category == null) {
+            return new Result(false, StatusCode.ERROR, "房型不存在！");
+        }
+        
         // 金额字段保持为"每晚房价"，押金仅用于展示/备注
-        appointment.setMoney(r.getCategory().getPrice());
-        java.math.BigDecimal deposit = r.getCategory().getDeposit() == null ? java.math.BigDecimal.ZERO : r.getCategory().getDeposit();
+        appointment.setMoney(category.getPrice());
+        java.math.BigDecimal deposit = category.getDeposit() == null ? java.math.BigDecimal.ZERO : category.getDeposit();
         appointment.setDeposit(deposit);
         appointment.setStatus(1);//1-待确认 2-预约成功 3-已取消
         appointmentMapper.insert(appointment);
@@ -193,6 +197,9 @@ public class AppointmentService {
 
     public Result confirm(Integer appointmentId) {
         Appointment appointment = appointmentMapper.selectById(appointmentId);
+        if (appointment.getRoomId() == null) {
+            return new Result(false, StatusCode.ERROR, "请先为该预约分配房间！");
+        }
         // 仅当存在与预约区间重叠的订单时才视为被占用
         ArrayList<Integer> statusList = new ArrayList<>();
         statusList.add(1);//已预订

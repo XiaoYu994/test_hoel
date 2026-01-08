@@ -16,7 +16,7 @@ public class Appointment {
 	@TableField("member_id")
     private Integer memberId;// 用户
 	@TableField("room_id")
-    private Integer roomId;// 房型
+    private Integer roomId;// 房间
 	@TableField("start_time")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date startTime;// 入住时间
@@ -30,18 +30,19 @@ public class Appointment {
     private BigDecimal money;// 已付金额
 	@TableField("deposit")
     private BigDecimal deposit;// 押金
-
+    @TableField("category_id")
+    private Integer categoryId; // 房型ID
 
     @TableField(exist = false)
     private Room room = new Room();
     @TableField(exist = false)
     private Member member = new Member();
+    @TableField(exist = false)
+    private Category category;
 
     public Appointment() {
         super();
     }
-
-
 
     public  Integer getId() {
         return id;
@@ -126,5 +127,21 @@ public class Appointment {
 
     public void setDeposit(BigDecimal deposit) {
         this.deposit = deposit;
+    }
+
+    public Integer getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Integer categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
     }
 }

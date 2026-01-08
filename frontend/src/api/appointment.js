@@ -59,3 +59,12 @@ export const removeAppointmentAPI = id => {
         method: 'delete'
     })
 }
+
+//修改
+export const updateAppointmentAPI = data => {
+    return request({
+        url: '/appointment/',
+        method: 'put',
+        data
+    })
+}

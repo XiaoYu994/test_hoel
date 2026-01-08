@@ -89,6 +89,9 @@ public class RoomService {
 
     public Room findById(Integer id) {
         Room room = roomMapper.selectById(id);
+        if (room == null) {
+            return null;
+        }
         //1.查询房型
         Category category = categoryMapper.selectById(room.getCategoryId());
         room.setCategory(category);

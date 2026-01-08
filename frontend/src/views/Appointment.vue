@@ -86,9 +86,9 @@
               <span v-else>--</span>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="房型" prop="room.category.categoryName" width="110">
+          <el-table-column align="center" label="房型" prop="category.categoryName" width="110">
             <template #default="scope">
-              {{ scope.row.room?.category?.categoryName || '--' }}
+              {{ scope.row.category?.categoryName || scope.row.room?.category?.categoryName || '--' }}
             </template>
           </el-table-column>
           <el-table-column align="center" label="房号" width="90">
@@ -96,7 +96,7 @@
               <el-tag type="primary" effect="plain" class="room-number" v-if="scope.row.room">
                 {{ scope.row.room.roomNum }}
               </el-tag>
-              <span v-else>--</span>
+              <el-tag type="info" effect="plain" v-else>未分配</el-tag>
             </template>
           </el-table-column>
           <el-table-column align="center" label="入住时间" width="110">
@@ -132,7 +132,7 @@
               <span class="total-value">￥{{ scope.row.money && scope.row.deposit ? ((scope.row.money * scope.row.days) + scope.row.deposit).toFixed(2) : '0.00' }}</span>
             </template>
           </el-table-column>
-          <el-table-column label="操作" min-width="240" align="center">
+          <el-table-column label="操作" min-width="280" align="center">
             <template #default="scope">
               <div class="action-buttons">
                 <el-button 
@@ -144,7 +144,16 @@
                   class="action-button"
                 >详情</el-button>
                 <el-button 
-                  v-if="scope.row.status == 1" 
+                  v-if="scope.row.status == 1 && !scope.row.room" 
+                  @click="handleAssignRoom(scope.row)" 
+                  type="success" 
+                  size="small" 
+                  icon="el-icon-house"
+                  plain
+                  class="action-button"
+                >分配</el-button>
+                <el-button 
+                  v-if="scope.row.status == 1 && scope.row.room" 
                   @click="handleCofirmAppointemnt(scope.row)" 
                   type="primary" 
                   size="small" 
@@ -276,6 +285,39 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 分配房间弹框 -->
+    <el-dialog 
+      title="分配房间" 
+      v-model="assignDialogVisible"
+      width="500px"
+      center
+    >
+      <el-form :model="assignForm" label-width="80px">
+        <el-form-item label="选择房间">
+          <el-select v-model="assignForm.roomId" placeholder="请选择房间" style="width: 100%">
+            <el-option 
+              v-for="room in availableRooms" 
+              :key="room.id" 
+              :label="room.roomNum" 
+              :value="room.id"
+              :disabled="!room.canUse"
+            >
+              <span style="float: left">{{ room.roomNum }}</span>
+              <span style="float: right; color: #8492a6; font-size: 13px">
+                {{ room.canUse ? '可用' : '不可用' }}
+              </span>
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="assignDialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="assignConfirm">确 定</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -287,8 +329,10 @@ import {
   cancelAppointmentAPI,
   confirmAppointmentAPI,
   removeAppointmentAPI,
+  updateAppointmentAPI,
 } from "@/api/appointment";
 import { findAllMemberAPI } from '@/api/member'
+import { findRoomListAPI } from '@/api/room'
 
 const list = ref(null)
 const listLoading = ref(true)
@@ -301,6 +345,14 @@ const dialogForm = reactive({})
 const memberList = ref([])
 const showDetailDialog = ref(false)
 const detailData = reactive({})
+
+// 分配房间相关
+const assignDialogVisible = ref(false)
+const assignForm = reactive({
+  id: null,
+  roomId: null
+})
+const availableRooms = ref([])
 
 function tableRowClassName({ row, rowIndex }) {
   return rowIndex % 2 === 0 ? 'even-row' : 'odd-row'
@@ -346,6 +398,42 @@ function handleCancelAppointemnt(row) {
 function showAppointmentDetail(row) {
   showDetailDialog.value = true
   Object.assign(detailData, { ...row })
+}
+
+async function handleAssignRoom(row) {
+  assignForm.id = row.id
+  assignForm.roomId = null
+  assignDialogVisible.value = true
+  
+  // 查询该房型下的房间
+  const categoryId = row.categoryId || row.room?.categoryId || row.category?.id
+  if (categoryId) {
+    const res = await findRoomListAPI({ 
+        categoryId: categoryId,
+        startDate: row.startTime ? row.startTime.slice(0,10) : undefined
+    })
+    availableRooms.value = res.data
+  } else {
+    availableRooms.value = []
+    ElMessage.warning('无法获取房型信息')
+  }
+}
+
+async function assignConfirm() {
+  if (!assignForm.roomId) {
+    ElMessage.warning('请选择房间')
+    return
+  }
+  try {
+    const res = await updateAppointmentAPI(assignForm)
+    ElMessage({ message: res.message, type: res.flag ? 'success' : 'error' })
+    if (res.flag) {
+      assignDialogVisible.value = false
+      fetchData()
+    }
+  } catch (error) {
+    console.error('分配失败', error)
+  }
 }
 
 function handleSizeChange(val) {

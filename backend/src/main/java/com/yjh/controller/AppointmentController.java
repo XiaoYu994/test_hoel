@@ -5,7 +5,6 @@ import com.yjh.entity.Appointment;
 import com.yjh.entity.model.Result;
 import com.yjh.entity.model.StatusCode;
 import com.yjh.service.AppointmentService;
-import com.yjh.service.OrdersService;
 import com.yjh.utils.JWTUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +18,6 @@ public class AppointmentController {
 
     @Autowired
     private AppointmentService appointmentService;
-    @Autowired
-    private OrdersService ordersService;
 
     /**
     * 根据条件查询
@@ -88,6 +85,17 @@ public class AppointmentController {
     }
 
     /**
+     * 修改预约信息（如分配房间）
+     * @param appointment
+     * @return
+     */
+    @PutMapping
+    public Result update(@RequestBody Appointment appointment){
+        appointmentService.modify(appointment);
+        return new Result(true, StatusCode.OK,"修改成功");
+    }
+
+    /**
     * 根据id查询
     * @param id
     * @return
@@ -108,7 +116,5 @@ public class AppointmentController {
         appointmentService.removeById(id);
         return new Result(true, StatusCode.OK,"删除成功");
     }
-
-
 
 }

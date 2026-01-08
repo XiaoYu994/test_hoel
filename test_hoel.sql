@@ -51,6 +51,7 @@ CREATE TABLE `appointment`  (
   `remark` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL COMMENT '备注',
   `money` decimal(10, 2) NULL DEFAULT NULL COMMENT '已付金额',
   `deposit` decimal(10, 2) NULL DEFAULT NULL COMMENT '押金',
+  `category_id` int(0) NULL DEFAULT NULL COMMENT '房型ID',
   PRIMARY KEY (`id`) USING BTREE
 ) ENGINE = InnoDB AUTO_INCREMENT = 49 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = '预订' ROW_FORMAT = Compact;
 

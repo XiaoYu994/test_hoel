@@ -101,6 +101,11 @@ const routes = [
         component: () => import(/* webpackChunkName: "welcome" */ '@/views/front/RoomDetails.vue')
       },
       {
+        path: 'categoryDetails/:id',
+        name: 'CategoryDetails',
+        component: () => import(/* webpackChunkName: "welcome" */ '@/views/front/CategoryDetails.vue')
+      },
+      {
         path: 'notice',
         name: 'Notice',
         component: () => import(/* webpackChunkName: "welcome" */ '@/views/front/Notice.vue')
@@ -151,6 +156,7 @@ const whiteList = [//普通路由
 ]
 const whiteListWithDetails = [//动态路由
   "/front/roomDetails/",
+  "/front/categoryDetails/",
   "/front/noticeDetails/",
 ]
 
